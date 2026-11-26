@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 // One Star, Written in Sap — make.fun entry.
@@ -28,6 +28,14 @@ function main(): void {
   mkdirSync(outDir, { recursive: true });
   const outPath = join(outDir, "entry.txt");
   writeFileSync(outPath, line, "utf8");
+  // Read the file back and verify it holds exactly the validated line:
+  // a partial write or stray newline must fail loudly, never ship silently.
+  const written = readFileSync(outPath, "utf8");
+  if (written !== line) {
+    throw new Error(
+      `entry.txt mismatch after write: got ${written.length} chars, expected ${line.length}`,
+    );
+  }
   console.log(`Wrote ${line.length} chars to ${outPath}`);
   console.log(line);
 }
